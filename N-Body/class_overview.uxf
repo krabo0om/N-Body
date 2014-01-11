@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="12.2">
+  <zoom_level>10</zoom_level>
+  <element>
+    <type>com.umlet.element.Class</type>
+    <coordinates>
+      <x>90</x>
+      <y>210</y>
+      <w>310</w>
+      <h>90</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;template&gt;&gt;
+Computation&lt;T, IR, R&gt;
+--
+
+--
+/static + IR compute(T particle1, T particle2)/
+/static + R aggregate(vector&lt;IR&gt; interim_results)/</panel_attributes>
+    <additional_attributes/>
+  </element>
+</diagram>
