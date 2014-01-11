@@ -17,6 +17,10 @@ template <class P, class ER>
 int N_Body<P, ER>::compute(){
 
 	//mpi master finden
+	int mpi_init_i;
+	char ** mpi_init_c;	//TODO besseren weg finden?
+	MPI_Init(&mpi_init_i, &mpi_init_c);
+
 	//broadcast der particle
 	//alle ermitteln ihren streifen
 	//berechnung mittels openMP

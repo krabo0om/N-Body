@@ -8,6 +8,7 @@
 #ifndef N_BODY_H_
 #define N_BODY_H_
 
+#include "mpi.h"
 //TODO structure of parameters
 
 /**
