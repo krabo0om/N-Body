@@ -12,10 +12,8 @@
 #include <iostream>
 #include "stdint.h"
 #include <sys/types.h>
-#include <omp.h>
-#include "N_Body.cpp"
 
-using namespace std;
+#include "N_Body.cpp"
 
 const unsigned int SIZE = 8;
 
@@ -31,20 +29,25 @@ int main(int argc, char *argv[]) {
 	 MPI_Finalize();
 	 */
 
-	vector<int> vec;
+	std::vector<int> vec;
 	N_Body<int, int, int> n;
 
 	vec.push_back(1);
 	vec.push_back(2);
 	vec.push_back(3);
 	vec.push_back(4);
-//	vec.push_back(5);
-//	vec.push_back(6);
-//	vec.push_back(7);
-//	vec.push_back(8);
+	vec.push_back(5);
+	vec.push_back(6);
+	vec.push_back(7);
 
 	n.setParticles(&vec);
 	n.compute();
+
+	std::cout << "erg: ";
+	for (std::vector<int>::iterator it = n.getResult()->begin(); it != n.getResult()->end(); ++it){
+		std::cout << *it << " ";
+	}
+	std::cout << std::endl;
 
 	/* This creates a team of threads; each thread has own copy of variables  */
 //#pragma omp parallel private(numThreads, tid)
