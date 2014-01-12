@@ -43,9 +43,10 @@ int main(int argc, char *argv[]) {
 	n.setParticles(&vec);
 	n.compute();
 
-	std::cout << "erg: ";
-	for (std::vector<int>::iterator it = n.getResult()->begin(); it != n.getResult()->end(); ++it){
-		std::cout << *it << " ";
+	std::cout << "erg: " << n.getResult()->capacity();
+
+	for (unsigned int i = 0; i < n.getResult()->capacity(); i++){
+		std::cout << n.getResult()->at(i) << " ";
 	}
 	std::cout << std::endl;
 

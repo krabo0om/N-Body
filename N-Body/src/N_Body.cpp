@@ -71,7 +71,6 @@ class N_Body {
 						//TODO vllt gleich alles berechnen? performance einbuße aufgrund abhängiger schleife?
 					}
 					ER temp = Computation<P, IR, ER>::aggregate(inter);
-					std::cout << "ich bin thread " << omp_get_thread_num() << " und berechnetet streifen " << row+offset << " mit erg " << temp << endl;
 					#pragma omp critical
 					{
 						result.push_back(temp);
@@ -81,13 +80,13 @@ class N_Body {
 			std::vector<ER> endresults;
 			//ergebnisse zusammen führen
 			if (rank == 0) {
-				endresults.reserve(particle_data.size());
+				endresults.assign(particle_data.size(), 1);
 			}
 			MPI_Gather(&result.front(), strip_width, MPI_INT, &endresults.front(), strip_width, MPI_INT, 0, MPI_COMM_WORLD);
 			//fertig
 
 			if (rank == 0) {
-				this->result = endresults;
+				this->result.assign(endresults.begin(), endresults.end());
 			}
 
 			MPI_Finalize();
