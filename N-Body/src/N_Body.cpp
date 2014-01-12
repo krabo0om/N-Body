@@ -1,32 +1,101 @@
 /*
- * N_Body.cpp
+ * N_Body.h
  *
  *  Created on: 10.01.2014
  *      Author: ulkba_000
  */
 
-#include "N_Body.h"
+#ifndef N_BODY_H_
+#define N_BODY_H_
 
-template <class P, class ER>
-N_Body<P, ER>::N_Body(P data[], int size) {
-	this->data_size = size;
-	this->particle_data = data;
-}
+#include "mpi.h"
+#include "Computation.h"
+#include <iostream>
+#include <vector>
+#include <map>	//TODO unordered map?
+//TODO structure of parameters
 
-template <class P, class ER>
-int N_Body<P, ER>::compute(){
+/**
+ * Main class for controlling the tasks. It will split the work and coordinate the nodes.
+ * @tparam P the particle class
+ * @tparam ER the end result class
+ */
+template<class P, class IR, class ER>
+class N_Body {
+	public:
+		/**
+		 * Assign the list of particles to compute with
+		 * @param data the list of particles
+		 */
+		void setParticles(std::vector<P> *data) {
+			particle_data = *data;
+		}
 
-	//mpi master finden
-	int mpi_init_i;
-	char ** mpi_init_c;	//TODO besseren weg finden?
-	MPI_Init(&mpi_init_i, &mpi_init_c);
+		/**
+		 * Starts the computation. The result can be accessed by #getResult().
+		 * @return 0 if everything went right
+		 */
+		int compute() {
 
-	//broadcast der particle
-	//alle ermitteln ihren streifen
-	//berechnung mittels openMP
-	//ergebnisse zusammen führen
-	//fertig
+			//particle_data = {1,2,3,4,5};
+			//mpi master finden
+			int mpi_init_i;
+			char ** mpi_init_c;    //TODO besseren weg finden?
+			MPI_Init(&mpi_init_i, &mpi_init_c);
 
-	return -1;	//TODO imagine some error codes
-}
+			int rank, proc;
+			MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+			MPI_Comm_size(MPI_COMM_WORLD, &proc);
 
+			//broadcast der particle
+			MPI_Bcast(&particle_data.front(), particle_data.size(), MPI_INT, 0, MPI_COMM_WORLD);
+			//TODO eigenen datentyp erstellen: http://stackoverflow.com/questions/10419990/creating-an-mpi-datatype-for-a-structure-containing-pointers
+			//TODO ist ein broadcast nötig, wenn alle mpi clients eh mit den anfangsdaten starten oder ist das aufm hpc anders?
+
+			//alle ermitteln ihren streifen
+			int strip_width = particle_data.size() / proc;
+			int offset = rank * strip_width;
+			//berechnung mittels openMP
+//			std::map<P, ER> result;
+			std::vector<ER> result;
+#pragma omp parallel
+			{
+				for (int row = 0; row < strip_width && row + offset < particle_data.size(); row++) {    //streifen durchgehen
+					P local = particle_data[row + offset];
+					vector<IR> inter(particle_data.size());
+					for (typename vector<P>::iterator it = particle_data.begin(); it != particle_data.end(); it++) {    //compute ER
+						inter.push_back(Computation<P, IR, ER>::compute(local, *it));
+						std::cout << Computation<P, IR, ER>::compute(local, *it) << "\n";
+						//TODO vllt gleich alles berechnen? performance einbuße aufgrund abhängiger schleife?
+					}
+					result.push_back(Computation<P, IR, ER>::aggregate(inter));
+//					std::cout << rank << " berechnete reihe "<< row << " mit erg " << Computation<P, IR, ER>::aggregate(inter) << "\n";
+				}
+			}
+			std::vector<ER> endresults;
+			//ergebnisse zusammen führen
+			if (rank == 0){
+				endresults.reserve(particle_data.size());
+			}
+			MPI_Gather(&result.front(), strip_width, MPI_INT, &endresults.front(), strip_width, MPI_INT, 0, MPI_COMM_WORLD);
+			//fertig
+
+			MPI_Finalize();
+			return -1;
+			//TODO imagine some error codes
+		}
+
+		/**
+		 * Returns the result after a successful computation. If there is currently no result, \c NULL will be returned.
+		 * @return \c NULL if there is no result, else the result of the latest computation
+		 */
+		vector<ER> getResult();
+
+	private:
+		/**
+		 * stores the particle data
+		 */
+		std::vector<P> particle_data;
+};
+
+#endif /* N_BODY_H_ */

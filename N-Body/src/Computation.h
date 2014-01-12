@@ -18,7 +18,7 @@ public:
 		static IR compute(P obj1, P obj2){
 			return obj1 + obj2;
 		}
-		static ER aggregate(vector<ER> interim_results){
+		static ER aggregate(vector<IR> interim_results){
 			int erg = 0;
 			for (vector<int>::iterator it = interim_results.begin(); it != interim_results.end(); it++){
 				erg += *it;
