@@ -50,6 +50,7 @@ class N_Body {
 			//TODO eigenen datentyp erstellen: http://stackoverflow.com/questions/10419990/creating-an-mpi-datatype-for-a-structure-containing-pointers
 			//TODO ist ein broadcast nötig, wenn alle mpi clients eh mit den anfangsdaten starten oder ist das aufm hpc anders?
 
+			//TODO letzter Node sollte root sein, der hat meist weniger zu tun
 			//alle ermitteln ihren streifen
 			int strip_width = (int) ((particle_data.size() / proc) + 0.5);    //round up
 			int offset = rank * strip_width;
@@ -82,6 +83,7 @@ class N_Body {
 			if (rank == 0) {
 				endresults.assign(particle_data.size(), 1);
 			}
+			//TODO use mpi_gatherV
 			MPI_Gather(&result.front(), strip_width, MPI_INT, &endresults.front(), strip_width, MPI_INT, 0, MPI_COMM_WORLD);
 			//fertig
 

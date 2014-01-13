@@ -39,11 +39,12 @@ int main(int argc, char *argv[]) {
 	vec.push_back(5);
 	vec.push_back(6);
 	vec.push_back(7);
+	vec.push_back(8);
 
 	n.setParticles(&vec);
 	n.compute();
 
-	std::cout << "erg: " << n.getResult()->capacity();
+	std::cout << "erg: ";
 
 	for (unsigned int i = 0; i < n.getResult()->capacity(); i++){
 		std::cout << n.getResult()->at(i) << " ";

@@ -16,7 +16,7 @@ template <class P, class IR, class ER>
 class Computation {
 public:
 		static IR compute(P obj1, P obj2){
-			return obj1 + obj2;
+			return obj1 * obj2;
 		}
 		static ER aggregate(vector<IR> interim_results){
 			int erg = 0;
