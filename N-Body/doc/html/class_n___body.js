@@ -1,8 +1,8 @@
 var class_n___body =
 [
-    [ "N_Body", "class_n___body.html#a9f6a2908e06728999075b108edf74ed6", null ],
-    [ "compute", "class_n___body.html#a14d5e3f2baa4152d4a58472a8cb89f3b", null ],
-    [ "getResult", "class_n___body.html#a6794de4d4773b7415a172f64ecb79a1d", null ],
-    [ "data_size", "class_n___body.html#a272cb04853efee52a4c6fccb33d19491", null ],
-    [ "particle_data", "class_n___body.html#acc38d223eda3ba2e7c0984e6ac52ab3a", null ]
+    [ "compute", "class_n___body.html#ac1238e0f3f772d99e2c3af9527d6c8ff", null ],
+    [ "getResult", "class_n___body.html#a866c20c2dc1338e126c172e746703db4", null ],
+    [ "setParticles", "class_n___body.html#a5d24823a98eab68bcb731f68a83d4150", null ],
+    [ "particle_data", "class_n___body.html#a678b30fba0fcca1baa2030e0eb7a41e6", null ],
+    [ "result", "class_n___body.html#ad2e9de35c17dfe63efec35913f0ab177", null ]
 ];

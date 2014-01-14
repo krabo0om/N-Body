@@ -4,7 +4,7 @@
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.6"/>
-<title>My Project: C:/progging/eclipse/workspaces/eclipse_paralllel/project/src/Computation.h Source File</title>
+<title>N-Body: C:/Users/ulkba_000/Documents/GitHub/N-Body/N-Body/src/Computation.h Source File</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -24,7 +24,7 @@
  <tbody>
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
-   <div id="projectname">My Project
+   <div id="projectname">N-Body
    </div>
   </td>
  </tr>
@@ -80,32 +80,53 @@ $(document).ready(function(){initNavTree('_computation_8h_source.html','');});
 <div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;</div>
 <div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;<span class="keyword">using namespace </span>std;</div>
 <div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;</div>
-<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">class</span> P, <span class="keyword">class</span> IR, <span class="keyword">class</span> ER&gt;</div>
-<div class="line"><a name="l00016"></a><span class="lineno"><a class="line" href="class_computation.html">   16</a></span>&#160;<span class="keyword">class </span><a class="code" href="class_computation.html">Computation</a> {</div>
-<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;<span class="keyword">public</span>:</div>
-<div class="line"><a name="l00018"></a><span class="lineno"><a class="line" href="class_computation.html#a80acd8c0a4782f2f63d5331b0ff252ec">   18</a></span>&#160;        <span class="keyword">static</span> IR <a class="code" href="class_computation.html#a80acd8c0a4782f2f63d5331b0ff252ec">compute</a>(P obj1, P obj2){</div>
-<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;            <span class="keywordflow">return</span> obj1 + obj2;</div>
-<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;        }</div>
-<div class="line"><a name="l00021"></a><span class="lineno"><a class="line" href="class_computation.html#a3a2306d7c6fc850348bb4582a5b32963">   21</a></span>&#160;        <span class="keyword">static</span> ER <a class="code" href="class_computation.html#a3a2306d7c6fc850348bb4582a5b32963">aggregate</a>(vector&lt;ER&gt; interim_results){</div>
-<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;            <span class="keywordtype">int</span> erg = 0;</div>
-<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;            <span class="keywordflow">for</span> (vector&lt;int&gt;::iterator it = interim_results.begin(); it != interim_results.end(); it++){</div>
-<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;                erg += *it;</div>
-<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;            }</div>
-<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;            <span class="keywordflow">return</span> erg;</div>
-<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;        }</div>
-<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;};</div>
-<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;</div>
-<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;<span class="preprocessor">#endif </span><span class="comment">/* COMPUTATION_H_ */</span><span class="preprocessor"></span></div>
-<div class="ttc" id="class_computation_html_a3a2306d7c6fc850348bb4582a5b32963"><div class="ttname"><a href="class_computation.html#a3a2306d7c6fc850348bb4582a5b32963">Computation::aggregate</a></div><div class="ttdeci">static ER aggregate(vector&lt; ER &gt; interim_results)</div><div class="ttdef"><b>Definition:</b> Computation.h:21</div></div>
-<div class="ttc" id="class_computation_html"><div class="ttname"><a href="class_computation.html">Computation</a></div><div class="ttdef"><b>Definition:</b> Computation.h:16</div></div>
-<div class="ttc" id="class_computation_html_a80acd8c0a4782f2f63d5331b0ff252ec"><div class="ttname"><a href="class_computation.html#a80acd8c0a4782f2f63d5331b0ff252ec">Computation::compute</a></div><div class="ttdeci">static IR compute(P obj1, P obj2)</div><div class="ttdef"><b>Definition:</b> Computation.h:18</div></div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;<span class="comment">//TODO IR und ER zusammen fassen</span></div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;</div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;<span class="keyword">template</span>&lt;<span class="keyword">class</span> P, <span class="keyword">class</span> IR, <span class="keyword">class</span> ER&gt;</div>
+<div class="line"><a name="l00018"></a><span class="lineno"><a class="line" href="class_computation.html">   18</a></span>&#160;<span class="keyword">class </span><a class="code" href="class_computation.html">Computation</a> {</div>
+<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;    <span class="keyword">public</span>:</div>
+<div class="line"><a name="l00020"></a><span class="lineno"><a class="line" href="class_computation.html#a80acd8c0a4782f2f63d5331b0ff252ec">   20</a></span>&#160;        <span class="keyword">static</span> IR <a class="code" href="class_computation.html#a80acd8c0a4782f2f63d5331b0ff252ec">compute</a>(P obj1, P obj2) {</div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;            <span class="keywordflow">return</span> obj1 + obj2;</div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;        }</div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;</div>
+<div class="line"><a name="l00030"></a><span class="lineno"><a class="line" href="class_computation.html#a11ac7205e34f5117279e9b11a1c9c546">   30</a></span>&#160;        <span class="keyword">static</span> ER <a class="code" href="class_computation.html#a11ac7205e34f5117279e9b11a1c9c546">aggregate</a>(IR obj1, IR obj2) {</div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;            <span class="comment">//change your code here</span></div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;            <span class="keywordflow">return</span> obj1 + obj2;</div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;        }</div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;</div>
+<div class="line"><a name="l00041"></a><span class="lineno"><a class="line" href="class_computation.html#a556846c5f260af6e9c6302f8352b75c9">   41</a></span>&#160;        <span class="keyword">static</span> ER <a class="code" href="class_computation.html#a556846c5f260af6e9c6302f8352b75c9">aggregate</a>(vector&lt;IR&gt; objs, ER obj2) {</div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;            ER erg = obj2;</div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;            <span class="keywordflow">for</span> (<span class="keyword">typename</span> vector&lt;IR&gt;::iterator it = objs.begin(); it != objs.end(); it++) {</div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;                erg = aggregate(erg, *it);</div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;            }</div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;            <span class="keywordflow">return</span> erg;</div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;        }</div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;</div>
+<div class="line"><a name="l00054"></a><span class="lineno"><a class="line" href="class_computation.html#ac5c1561fdaf69dfaf6426bc697d28d40">   54</a></span>&#160;        <span class="keyword">static</span> ER <a class="code" href="class_computation.html#ac5c1561fdaf69dfaf6426bc697d28d40">aggregate</a>(vector&lt;IR&gt; interim_results) {</div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;            <span class="keywordflow">if</span> (interim_results.size() &lt; 2) <span class="keywordflow">return</span> 0;</div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;            <span class="keyword">typename</span> vector&lt;ER&gt;::iterator it = interim_results.begin();</div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;            ER temp = *it; it++;</div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;            ER erg = aggregate(temp, *it);</div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;            <span class="keywordflow">for</span> (; it != interim_results.end(); it++) {</div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;                erg += *it;</div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;            }</div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;            <span class="keywordflow">return</span> erg;</div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;        }</div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;};</div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;</div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;<span class="preprocessor">#endif </span><span class="comment">/* COMPUTATION_H_ */</span><span class="preprocessor"></span></div>
+<div class="ttc" id="class_computation_html_ac5c1561fdaf69dfaf6426bc697d28d40"><div class="ttname"><a href="class_computation.html#ac5c1561fdaf69dfaf6426bc697d28d40">Computation::aggregate</a></div><div class="ttdeci">static ER aggregate(vector&lt; IR &gt; interim_results)</div><div class="ttdef"><b>Definition:</b> Computation.h:54</div></div>
+<div class="ttc" id="class_computation_html_a556846c5f260af6e9c6302f8352b75c9"><div class="ttname"><a href="class_computation.html#a556846c5f260af6e9c6302f8352b75c9">Computation::aggregate</a></div><div class="ttdeci">static ER aggregate(vector&lt; IR &gt; objs, ER obj2)</div><div class="ttdef"><b>Definition:</b> Computation.h:41</div></div>
+<div class="ttc" id="class_computation_html"><div class="ttname"><a href="class_computation.html">Computation</a></div><div class="ttdef"><b>Definition:</b> Computation.h:18</div></div>
+<div class="ttc" id="class_computation_html_a11ac7205e34f5117279e9b11a1c9c546"><div class="ttname"><a href="class_computation.html#a11ac7205e34f5117279e9b11a1c9c546">Computation::aggregate</a></div><div class="ttdeci">static ER aggregate(IR obj1, IR obj2)</div><div class="ttdef"><b>Definition:</b> Computation.h:30</div></div>
+<div class="ttc" id="class_computation_html_a80acd8c0a4782f2f63d5331b0ff252ec"><div class="ttname"><a href="class_computation.html#a80acd8c0a4782f2f63d5331b0ff252ec">Computation::compute</a></div><div class="ttdeci">static IR compute(P obj1, P obj2)</div><div class="ttdef"><b>Definition:</b> Computation.h:20</div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li><li class="navelem"><a class="el" href="_computation_8h.html">Computation.h</a></li>
-    <li class="footer">Generated on Fri Jan 10 2014 19:26:07 for My Project by
+    <li class="footer">Generated on Tue Jan 14 2014 02:34:28 for N-Body by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.6 </li>
   </ul>

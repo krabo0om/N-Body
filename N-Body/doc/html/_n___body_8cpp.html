@@ -4,7 +4,7 @@
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.6"/>
-<title>My Project: C:/progging/eclipse/workspaces/eclipse_paralllel/project/src/N_Body.cpp File Reference</title>
+<title>N-Body: C:/Users/ulkba_000/Documents/GitHub/N-Body/N-Body/src/N_Body.cpp File Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -24,7 +24,7 @@
  <tbody>
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
-   <div id="projectname">My Project
+   <div id="projectname">N-Body
    </div>
   </td>
  </tr>
@@ -62,18 +62,121 @@ $(document).ready(function(){initNavTree('_n___body_8cpp.html','');});
 </script>
 <div id="doc-content">
 <div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#define-members">Macros</a> &#124;
+<a href="#var-members">Variables</a>  </div>
   <div class="headertitle">
 <div class="title">N_Body.cpp File Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><code>#include &quot;<a class="el" href="_n___body_8h_source.html">N_Body.h</a>&quot;</code><br/>
-</div></div><!-- contents -->
+<div class="textblock"><code>#include &quot;mpi.h&quot;</code><br/>
+<code>#include &lt;omp.h&gt;</code><br/>
+<code>#include &quot;<a class="el" href="_computation_8h_source.html">Computation.h</a>&quot;</code><br/>
+<code>#include &lt;iostream&gt;</code><br/>
+<code>#include &lt;vector&gt;</code><br/>
+<code>#include &lt;map&gt;</code><br/>
+</div><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_n___body.html">N_Body&lt; P, IR, ER &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="define-members"></a>
+Macros</h2></td></tr>
+<tr class="memitem:aa88be15c7a3d4724917088f01a42e285"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_n___body_8cpp.html#aa88be15c7a3d4724917088f01a42e285">N_BODY_H_</a></td></tr>
+<tr class="separator:aa88be15c7a3d4724917088f01a42e285"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
+Variables</h2></td></tr>
+<tr class="memitem:a6c97963f71f5bb84cf863f54a96ee6c8"><td class="memItemLeft" align="right" valign="top">static const unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_n___body_8cpp.html#a6c97963f71f5bb84cf863f54a96ee6c8">CHUNK_SIZE</a> = 2</td></tr>
+<tr class="separator:a6c97963f71f5bb84cf863f54a96ee6c8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab3ffbf1a21439fd7e95029bb03001ad0"><td class="memItemLeft" align="right" valign="top">static const unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_n___body_8cpp.html#ab3ffbf1a21439fd7e95029bb03001ad0">MPI_NEW_DATA_TAG</a> = 111</td></tr>
+<tr class="separator:ab3ffbf1a21439fd7e95029bb03001ad0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a500de2c8b07895a3cb95f5e1190b54b4"><td class="memItemLeft" align="right" valign="top">static const MPI_Datatype&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_n___body_8cpp.html#a500de2c8b07895a3cb95f5e1190b54b4">mpi_datatype</a> = MPI_INT</td></tr>
+<tr class="separator:a500de2c8b07895a3cb95f5e1190b54b4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<h2 class="groupheader">Macro Definition Documentation</h2>
+<a class="anchor" id="aa88be15c7a3d4724917088f01a42e285"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define N_BODY_H_</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<h2 class="groupheader">Variable Documentation</h2>
+<a class="anchor" id="a6c97963f71f5bb84cf863f54a96ee6c8"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const unsigned int CHUNK_SIZE = 2</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a500de2c8b07895a3cb95f5e1190b54b4"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const MPI_Datatype mpi_datatype = MPI_INT</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="ab3ffbf1a21439fd7e95029bb03001ad0"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const unsigned int MPI_NEW_DATA_TAG = 111</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+</div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li><li class="navelem"><a class="el" href="_n___body_8cpp.html">N_Body.cpp</a></li>
-    <li class="footer">Generated on Fri Jan 10 2014 19:26:07 for My Project by
+    <li class="footer">Generated on Tue Jan 14 2014 02:34:28 for N-Body by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.6 </li>
   </ul>

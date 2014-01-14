@@ -4,7 +4,7 @@
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.6"/>
-<title>My Project: Computation&lt; P, IR, ER &gt; Class Template Reference</title>
+<title>N-Body: Computation&lt; P, IR, ER &gt; Class Template Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -24,7 +24,7 @@
  <tbody>
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
-   <div id="projectname">My Project
+   <div id="projectname">N-Body
    </div>
   </td>
  </tr>
@@ -77,11 +77,15 @@ $(document).ready(function(){initNavTree('class_computation.html','');});
 Static Public Member Functions</h2></td></tr>
 <tr class="memitem:a80acd8c0a4782f2f63d5331b0ff252ec"><td class="memItemLeft" align="right" valign="top">static IR&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_computation.html#a80acd8c0a4782f2f63d5331b0ff252ec">compute</a> (P obj1, P obj2)</td></tr>
 <tr class="separator:a80acd8c0a4782f2f63d5331b0ff252ec"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3a2306d7c6fc850348bb4582a5b32963"><td class="memItemLeft" align="right" valign="top">static ER&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_computation.html#a3a2306d7c6fc850348bb4582a5b32963">aggregate</a> (vector&lt; ER &gt; interim_results)</td></tr>
-<tr class="separator:a3a2306d7c6fc850348bb4582a5b32963"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a11ac7205e34f5117279e9b11a1c9c546"><td class="memItemLeft" align="right" valign="top">static ER&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_computation.html#a11ac7205e34f5117279e9b11a1c9c546">aggregate</a> (IR obj1, IR obj2)</td></tr>
+<tr class="separator:a11ac7205e34f5117279e9b11a1c9c546"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a556846c5f260af6e9c6302f8352b75c9"><td class="memItemLeft" align="right" valign="top">static ER&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_computation.html#a556846c5f260af6e9c6302f8352b75c9">aggregate</a> (vector&lt; IR &gt; objs, ER obj2)</td></tr>
+<tr class="separator:a556846c5f260af6e9c6302f8352b75c9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac5c1561fdaf69dfaf6426bc697d28d40"><td class="memItemLeft" align="right" valign="top">static ER&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_computation.html#ac5c1561fdaf69dfaf6426bc697d28d40">aggregate</a> (vector&lt; IR &gt; interim_results)</td></tr>
+<tr class="separator:ac5c1561fdaf69dfaf6426bc697d28d40"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a class="anchor" id="a3a2306d7c6fc850348bb4582a5b32963"></a>
+<a class="anchor" id="a11ac7205e34f5117279e9b11a1c9c546"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
@@ -93,7 +97,97 @@ template&lt;class P , class IR , class ER &gt; </div>
         <tr>
           <td class="memname">static ER <a class="el" href="class_computation.html">Computation</a>&lt; P, IR, ER &gt;::aggregate </td>
           <td>(</td>
-          <td class="paramtype">vector&lt; ER &gt;&#160;</td>
+          <td class="paramtype">IR&#160;</td>
+          <td class="paramname"><em>obj1</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">IR&#160;</td>
+          <td class="paramname"><em>obj2</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Aggregates two intermediate results to one end result </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">obj1</td><td>an intermediate result </td></tr>
+    <tr><td class="paramname">obj2</td><td>an intermediate result </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>the aggregation of the given intermediates </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="a556846c5f260af6e9c6302f8352b75c9"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;class P , class IR , class ER &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static ER <a class="el" href="class_computation.html">Computation</a>&lt; P, IR, ER &gt;::aggregate </td>
+          <td>(</td>
+          <td class="paramtype">vector&lt; IR &gt;&#160;</td>
+          <td class="paramname"><em>objs</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">ER&#160;</td>
+          <td class="paramname"><em>obj2</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Aggregates some intermediate results with an given end result </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">objs</td><td>some intermediate results </td></tr>
+    <tr><td class="paramname">obj2</td><td>an end result </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>an updated end result </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="ac5c1561fdaf69dfaf6426bc697d28d40"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;class P , class IR , class ER &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static ER <a class="el" href="class_computation.html">Computation</a>&lt; P, IR, ER &gt;::aggregate </td>
+          <td>(</td>
+          <td class="paramtype">vector&lt; IR &gt;&#160;</td>
           <td class="paramname"><em>interim_results</em></td><td>)</td>
           <td></td>
         </tr>
@@ -104,6 +198,14 @@ template&lt;class P , class IR , class ER &gt; </div>
   </tr>
 </table>
 </div><div class="memdoc">
+<p>Aggregates at least two intermediate results to an end result </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">interim_results</td><td>at least two intermediate results </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>the aggregation of the given intermediates or <code>0</code>, if there were not enough intermediates </dd></dl>
 
 </div>
 </div>
@@ -144,7 +246,7 @@ template&lt;class P , class IR , class ER &gt; </div>
 </div>
 </div>
 <hr/>The documentation for this class was generated from the following file:<ul>
-<li>C:/progging/eclipse/workspaces/eclipse_paralllel/project/src/<a class="el" href="_computation_8h_source.html">Computation.h</a></li>
+<li>C:/Users/ulkba_000/Documents/GitHub/N-Body/N-Body/src/<a class="el" href="_computation_8h_source.html">Computation.h</a></li>
 </ul>
 </div><!-- contents -->
 </div><!-- doc-content -->
@@ -152,7 +254,7 @@ template&lt;class P , class IR , class ER &gt; </div>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="class_computation.html">Computation</a></li>
-    <li class="footer">Generated on Fri Jan 10 2014 19:26:07 for My Project by
+    <li class="footer">Generated on Tue Jan 14 2014 02:34:28 for N-Body by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.6 </li>
   </ul>
