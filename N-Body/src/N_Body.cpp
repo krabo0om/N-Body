@@ -43,7 +43,7 @@ class N_Body {
 		int compute(unsigned int list_size) {
 
 			//particle_data = {1,2,3,4,5};
-			//mpi master finden
+			//mpi master finden !
 //			int mpi_init_i;
 //			char ** mpi_init_c;    //TODO besseren weg finden?
 //			MPI_Init(&mpi_init_i, &mpi_init_c);
@@ -143,7 +143,6 @@ class N_Body {
 			if (rank == 0) {
 				endresults.resize(list_size);
 			}
-			//TODO use mpi_gatherV
 //			std::cout << "rank: " << rank << " for gather" << std::endl;
 //			std::flush(cout);
 			MPI_Gather(&result.front(), strip_width, MPI_INT, &endresults.front(), strip_width, MPI_INT, 0, MPI_COMM_WORLD);
