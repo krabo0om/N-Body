@@ -43,7 +43,7 @@ class N_Body {
 		int compute(unsigned int list_size) {
 
 			//particle_data = {1,2,3,4,5};
-			//mpi master finden
+			//mpi master finden !
 //			int mpi_init_i;
 //			char ** mpi_init_c;    //TODO besseren weg finden?
 //			MPI_Init(&mpi_init_i, &mpi_init_c);
