@@ -52,15 +52,25 @@ class N_Body {
 			MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 			MPI_Comm_size(MPI_COMM_WORLD, &proc);
 
-			//broadcast der particle
-//			MPI_Bcast(&particle_data.front(), particle_data.size(), MPI_INT, 0, MPI_COMM_WORLD);
 			//TODO eigenen datentyp erstellen: http://stackoverflow.com/questions/10419990/creating-an-mpi-datatype-for-a-structure-containing-pointers
-			//TODO ist ein broadcast nötig, wenn alle mpi clients eh mit den anfangsdaten starten oder ist das aufm hpc anders?
 
-			//TODO letzter Node sollte root sein, der hat meist weniger zu tun
 			//alle ermitteln ihren streifen
-			int strip_width = (int) ((list_size / proc) + 0.5);		//round up
-			int number_of_transmissions = list_size / CHUNK_SIZE;		//TODO auf rundungen prüfen
+			int strip_width = (int)(list_size / proc);		//TODO runden
+			int number_of_transmissions = list_size / CHUNK_SIZE;		//TODO der letzte streifen darf nicht kleiner sein
+
+			//calculate the array for mpi_scatterV
+			int scatter_cnt[proc];
+			int scatter_offset[proc];
+			int first_send_width = strip_width;
+			bool morelocals = false;		//true if number of locals greater than chunk_size
+			if (CHUNK_SIZE < strip_width){
+				morelocals = true;
+				first_send_width = CHUNK_SIZE;		//never send more data than the chunk_size allows
+			}
+			for (int i = 0; i < proc; i++){
+				scatter_cnt[i] = first_send_width;
+				scatter_offset[i] = i * strip_width;
+			}
 			/*int offset = rank * strip_width;
 			 if (offset + strip_width > list_size) {
 			 strip_width = list_size - offset;    //truncate the strip_width for the last process if the strip would be to large
@@ -74,11 +84,12 @@ class N_Body {
 			std::vector<P> locals(strip_width);
 			//send the locals to the respective nodes
 			MPI_Scatter(&particle_data.front(), strip_width, mpi_datatype, &locals.front(), strip_width, mpi_datatype, 0, MPI_COMM_WORLD);
+//			MPI_Scatterv(&particle_data.front(), scatter_cnt, scatter_offset, mpi_datatype, &locals.front(), CHUNK_SIZE, mpi_datatype, 0, MPI_COMM_WORLD);
 
-			if (locals.size() > CHUNK_SIZE) {
-				std::cerr << "chunks too small, aborting" << std::endl;
-				return -1337;
-			}
+//			if (locals.size() > CHUNK_SIZE) {
+//				std::cerr << "chunks too small, aborting" << std::endl;
+//				return -1337;
+//			}
 			buffer_out.assign(locals.begin(), locals.end());	//TODO locals.size() > CHUNK_SIZE
 
 			//berechnung mittels openMP
@@ -115,7 +126,7 @@ class N_Body {
 							inter.push_back(temp);
 						}
 						ER temp = Computation<P, IR, ER>::aggregate(inter, result[i]);
-						result[i] = temp;    //TODO BUG!! überschreibt immer und nimmt nicht das zwischenergebnis als grundlage
+						result[i] += temp;    //TODO BUG!! überschreibt immer und nimmt nicht das zwischenergebnis als grundlage
 						inter.clear();
 					}
 				}    //end of pragma omp parallel
@@ -143,10 +154,7 @@ class N_Body {
 			if (rank == 0) {
 				endresults.resize(list_size);
 			}
-//			std::cout << "rank: " << rank << " for gather" << std::endl;
-//			std::flush(cout);
-			MPI_Gather(&result.front(), strip_width, MPI_INT, &endresults.front(), strip_width, MPI_INT, 0, MPI_COMM_WORLD);
-//			std::cout << "rank: " << rank << " after gather" << std::endl;
+			MPI_Gather(&result.front(), strip_width, mpi_datatype, &endresults.front(), strip_width, mpi_datatype, 0, MPI_COMM_WORLD);
 			//fertig
 
 			if (rank == 0) {
@@ -154,7 +162,7 @@ class N_Body {
 			}
 
 			MPI_Finalize();
-			return -1;
+			return 0;
 			//TODO imagine some error codes
 		}
 
@@ -175,3 +183,4 @@ class N_Body {
 };
 
 #endif /* N_BODY_H_ */
+
