@@ -52,6 +52,12 @@ class N_Body {
 			MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 			MPI_Comm_size(MPI_COMM_WORLD, &proc);
 
+			MPI_Comm commring;
+		    int periodic = 1;
+		    int left, right;
+		    MPI_Cart_create( MPI_COMM_WORLD, 1, &proc, &periodic, 1, &commring );
+		    MPI_Cart_shift( commring, 0, 1, &left, &right );
+
 			//TODO eigenen datentyp erstellen: http://stackoverflow.com/questions/10419990/creating-an-mpi-datatype-for-a-structure-containing-pointers
 
 			//alle ermitteln ihren streifen

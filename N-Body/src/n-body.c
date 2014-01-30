@@ -2,7 +2,7 @@
  * n-body.c
  *
  *  Created on: 28.01.2014
- *      Author: yogi
+ *      Author: yogi, paul
  */
 
 #include "n-body.h"
@@ -11,27 +11,53 @@
 #define NUM_PARTICLES 20000
 #define CHUNK_SIZE 5000
 
+#define mpi_cnt(X) sizeof(particle) * X
+
 MPI_Datatype mpi_datatype = MPI_INT;
 MPI_Comm mpi_commring;
 
 static const unsigned int MPI_NEW_DATA_TAG = 111;
 
-struct force calculate_force(struct force f1, struct force f2) {
+force calculate_force(force f1, force f2) {
+	f1.x = 2.01 * f2.x + f2.y + f2.z;
+	f1.y = f2.x + 2.01 * f2.y + f2.z;
+	f1.z = f2.x + f2.y + 2.01 * f2.z;
 
 	return f1;
 }
 
 void setMpiDatatype() {
-	int blockl[4] = { 1, 1, 1, 1 };
-	MPI_Datatype types[4] = { MPI_INT, MPI_INT, MPI_INT, MPI_INT };
-	MPI_Aint offsets[4];
-	offsets[0] = offsetof(particle, x);
-	offsets[1] = offsetof(particle, y);
-	offsets[2] = offsetof(particle, z);
-	offsets[3] = offsetof(particle, value);
+	//force
+	int blockl[1] = { 4 };
+	MPI_Datatype types[1] = { MPI_FLOAT };
+	MPI_Aint offsets[1];
+	offsets[0] = 0;
+	MPI_Datatype temp_force;
 
-	MPI_Type_create_struct(4, blockl, offsets, types, &mpi_datatype);
+	MPI_Type_create_struct(1, blockl, offsets, types, &temp_force);
+	MPI_Type_commit(&temp_force);
+
+	//particle
+//	int blockl_p[5] = { 1, 1, 1, 1 ,1};
+//	MPI_Datatype types_p[5] = { MPI_FLOAT, MPI_FLOAT, MPI_FLOAT, MPI_FLOAT, temp_force};
+//	MPI_Aint offsets_p[5];
+//	offsets[0] = offsetof(particle, x);
+//	offsets[1] = offsetof(particle, y);
+//	offsets[2] = offsetof(particle, z);
+//	offsets[3] = offsetof(particle, value);
+//	offsets[4] = offsetof(particle, f);
+
+	int blockl_p[2] = { 4, 1 };
+	MPI_Datatype types_p[2] = { MPI_FLOAT, temp_force };
+	MPI_Aint offsets_p[2], extend, lb;
+	MPI_Type_get_extent(temp_force, &lb, &extend);
+	offsets_p[0] = 0;
+	offsets_p[1] = 4 * extend;
+
+	MPI_Type_create_struct(2, blockl_p, offsets_p, types_p, &mpi_datatype);
 	MPI_Type_commit(&mpi_datatype);
+
+	mpi_datatype = MPI_BYTE;
 }
 
 /**
@@ -52,7 +78,7 @@ void compute(particle* particles) {
 	MPI_Cart_shift(mpi_commring, 0, 1, &left, &right);
 
 	int strip_width = NUM_PARTICLES / mpi_size;
-	int number_of_transmissions = mpi_size;
+	int number_of_transmissions = NUM_PARTICLES / CHUNK_SIZE;
 	int buffer_width = CHUNK_SIZE;    //the first part of data to copy from the locals list to the output buffer
 	bool more_locals = false;    //there are more locals than chunk_size
 	if (strip_width > CHUNK_SIZE) {
@@ -77,24 +103,30 @@ void compute(particle* particles) {
 	int transmissions;
 	MPI_Request send_status;
 	MPI_Request recv_status;
-	for (transmissions = 0; transmissions < number_of_transmissions + 1; ++transmissions) {
-
+	for (transmissions = 0; transmissions < number_of_transmissions; ++transmissions) {
+		if (mpi_rank == 0) {
+			printf("transmission %d\n", transmissions);
+			fflush(stdout);
+		}
 		if (number_of_transmissions - 2 > transmissions) {
-			MPI_Isend(buffer_out, CHUNK_SIZE, mpi_datatype, right, MPI_NEW_DATA_TAG, mpi_commring, &send_status);
-			MPI_Irecv(buffer_in, CHUNK_SIZE, mpi_datatype, left, MPI_NEW_DATA_TAG, mpi_commring, &recv_status);
+			MPI_Isend(buffer_out, mpi_cnt(CHUNK_SIZE), mpi_datatype, right, MPI_NEW_DATA_TAG, mpi_commring, &send_status);
+			MPI_Irecv(buffer_in, mpi_cnt(CHUNK_SIZE), mpi_datatype, left, MPI_NEW_DATA_TAG, mpi_commring, &recv_status);
 		}
 
 		//gehe alle local partikel durch und berechne die auf sie wirkenden Kräfte
 		int i = 0;
 		int j = 0;
 
+#pragma acc data copy (particles[0: strip_width ], buffer_out [0:CHUNK_SIZE])
 		for (i = 0; i < strip_width; i++) {
-
+			particle* actual_particle = &particles[i];
 			//berechne die kraft die auf partikel i wirkt
-#pragma acc data copyin (particles[0: strip_width ], buffer_out [0:CHUNK_SIZE])
 #pragma acc parallel loop
 			for (j = 0; j < CHUNK_SIZE; j++) {
-				particles[i].value += buffer_out[j].value;
+//				actual_particle->f.x += buffer_out[j].f.x + buffer_out[j].f.y + buffer_out[j].f.z;
+//				actual_particle->f.y += buffer_out[j].f.x + buffer_out[j].f.y + buffer_out[j].f.z;
+//				actual_particle->f.z += buffer_out[j].f.x + buffer_out[j].f.y + buffer_out[j].f.z;
+				actual_particle->f.z = i + j;
 			}
 		}
 
@@ -103,9 +135,6 @@ void compute(particle* particles) {
 			MPI_Status temp;
 			MPI_Wait(&send_status, &temp);
 			MPI_Wait(&recv_status, &temp);
-		}
-
-		if (number_of_transmissions - 1 > transmissions) {
 			//free buffer_in, store data for next computation phase
 			//if we have to send some more locals and the current sending loop is complete
 			if (more_locals == true && (transmissions + 1) % mpi_size == 0) {
@@ -148,7 +177,10 @@ int main(int argc, char *argv[]) {
 	MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
 	MPI_Comm_size(MPI_COMM_WORLD, &mpi_size);
 
-	if (mpi_size < 2){
+	printf("test\n");
+	fflush(stdout);
+
+	if (mpi_size < 2) {
 		printf("Too few mpi processes (%d)", mpi_size);
 		MPI_Finalize();
 		return -1;
@@ -159,15 +191,27 @@ int main(int argc, char *argv[]) {
 
 	setMpiDatatype();
 
+//	mpi_size = 4;
 	int strip_width = NUM_PARTICLES / mpi_size;
 	particle locals[strip_width];
 	particle* particles;
 	if (mpi_rank == 0) {
 		//array alle vorhandenen Partikel
 		particles = malloc(sizeof(particle) * NUM_PARTICLES);
-		create_particles(particles, mpi_size);
+		create_particles(particles, NUM_PARTICLES);
+//		locals[0].f.value=1337;
+//		MPI_Send(locals, strip_width * sizeof(particle), mpi_datatype, 1, 0, mpi_commring);
+//		printf("gesendet\n");
 	}
-	MPI_Scatter(particles, mpi_size, mpi_datatype, locals, mpi_size, mpi_datatype, 0, mpi_commring);
+//	if (mpi_rank == 1){
+//		MPI_Status temp;
+//		MPI_Recv(locals, strip_width * sizeof(particle), mpi_datatype, 0, 0, mpi_commring, &temp);
+//		printf("empfangen\n");
+//		printf("%d: particle.value = %f\n", mpi_rank, locals[0].f.value);
+//	}
+//
+//
+	MPI_Scatter(particles, mpi_cnt(strip_width), mpi_datatype, locals, mpi_cnt(strip_width), mpi_datatype, 0, mpi_commring);
 
 	//übergebe alle particle an compute function die nbody berechnet und erhalte result particle mit forces
 	clock_t begin, end;
@@ -176,20 +220,19 @@ int main(int argc, char *argv[]) {
 	}
 
 	compute(locals);
+	printf("%d: compute done!\n", mpi_rank);
+	fflush(stdout);
 
-	MPI_Gather(locals, strip_width, mpi_datatype, particles, strip_width, mpi_datatype, 0, mpi_commring);
+	end = clock();
+	MPI_Gather(locals, mpi_cnt(strip_width), mpi_datatype, particles, mpi_cnt(strip_width), mpi_datatype, 0, mpi_commring);
 
 	if (mpi_rank == 0) {
-		end = clock();
 		double time_spent = (double) (end - begin) / CLOCKS_PER_SEC;
 		printf("particles: %d Zeit: %f \n", NUM_PARTICLES, time_spent);
 		free(particles);
 	}
 
-	//ergebnis ausgeben:
-	int i = 0;
-
-	MPI_Type_free(mpi_datatype);
+//	MPI_Type_free(&mpi_datatype);
 	MPI_Finalize();
 
 	/*
