@@ -8,12 +8,15 @@
 
 #include "n-body.h""
 #define SIZE_LOCAL 20000
-#define NUM_PARTICLES 20000	//Gesamstzahl aller partikel
+#define NUM_PARTICLES 20000
 #define CHUNK_SIZE 20000
 
 
 struct force calculate_force(struct force f1, struct force f2)
 {
+		f1.x =  2.01* f2.x + f2.y + f2.z;
+		f1.y =  f2.x +  2.01*f2.y + f2.z;
+		f1.z =  f2.x + f2.y +  2.01*f2.z;
 
 return f1;
 }
@@ -64,20 +67,28 @@ void compute (struct particle particles []) {
 	int i= 0;
 	int j =0;
 
+
+	{
+
+	#pragma acc data copy (particles[0: NUM_PARTICLES ], buffer_out [0:buffer_out_size])
 	for( i =0; i<SIZE_LOCAL;i++)
 	{
 
+		struct particle* actual_particle = &particles[i];
 
-
-		//berechne die kraft die auf partikel i wirkt
-		#pragma acc data copyin (particles[0: NUM_PARTICLES ], buffer_out [0:buffer_out_size])
 		#pragma acc parallel loop
 		for( j =0; j<buffer_out_size;j++)
 		{
-			particles[i].value += buffer_out[j].value;
+
+			actual_particle->f.x +=  buffer_out[j].f.x + buffer_out[j].f.y + buffer_out[j].f.z;
+			actual_particle->f.y +=  buffer_out[j].f.x +  buffer_out[j].f.y + buffer_out[j].f.z;
+			actual_particle->f.z +=  buffer_out[j].f.x + buffer_out[j].f.y +  buffer_out[j].f.z;
+
+
 
 		}
 
+	}
 	}
 
 				end = clock();
@@ -132,6 +143,10 @@ int main() {
 
  	//ergebnis ausgeben:
  	int i=0;
+ 	int b;
+ 	b= sizeof(struct particle);
+ 	printf ("structgröße %d",b );
+
  	printf("result:");
 
  	/*

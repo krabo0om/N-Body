@@ -12,17 +12,20 @@
 #include <stdlib.h>
 #include <time.h>
 
+
+
 /*
  * dieses struct definiert den Particle, ersetzen für andere particle art
  */
 struct force {
 	int value;
+	float x, y, z;
 };
 
 struct particle {
-	int x, y, z;
+	float x, y, z;
 	int value;
-	struct force;
+	struct force f;
 };
 
 /*

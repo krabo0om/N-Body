@@ -14,12 +14,16 @@
 #include <sys/types.h>
 #include <time.h>
 
-#include "N_Body.cpp"
+
 
 const unsigned int SIZE = 8;
 const bool OUTPUT = true;
 
+
+/*
 int main(int argc, char *argv[]) {
+/*
+ *
 
 	MPI_Init(&argc, &argv);
 	int rank;
@@ -40,6 +44,7 @@ int main(int argc, char *argv[]) {
 	n.compute(SIZE);
 
 
+
 	if (rank == 0) {
 		if (OUTPUT) {
 			std::cout << "erg: ";
@@ -51,6 +56,7 @@ int main(int argc, char *argv[]) {
 			std::cout << "done";
 		}
 	}
+	/
 	return 0;
 }
-
+*/
