@@ -39,6 +39,6 @@ typedef struct {
 void setMpiDatatype();
 force calculate_force(force f1, force f2);
 void create_particles(particle[], int size_of_array);
-void compute(particle* particles);
+void compute(particle particles[]);
 
 #endif /* N_BODY_H_ */

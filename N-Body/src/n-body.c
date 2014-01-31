@@ -66,7 +66,7 @@ void setMpiDatatype() {
  * @return
  */
 
-void compute(particle* particles) {
+void compute(particle particles[]) {
 
 	double time_spent;
 
@@ -79,11 +79,10 @@ void compute(particle* particles) {
 
 	int strip_width = NUM_PARTICLES / mpi_size;
 	int number_of_transmissions = NUM_PARTICLES / CHUNK_SIZE;
-	int buffer_width = CHUNK_SIZE;    //the first part of data to copy from the locals list to the output buffer
 	bool more_locals = false;    //there are more locals than chunk_size
 	if (strip_width > CHUNK_SIZE) {
 		more_locals = true;
-		buffer_width = strip_width;
+//		buffer_width = strip_width;
 	}
 
 	//particle locals[strip_width];			//locals sind die partikel zu denen ein Prozess die Kräfte die auf sie wirken berechnen soll
@@ -98,16 +97,12 @@ void compute(particle* particles) {
 	 buffer_out = (struct particle *) malloc(CHUNK_SIZE * sizeof(struct particle));
 	 result = (struct particle *) malloc(NUM_PARTICLES * sizeof(struct particle));
 	 */
-	memcpy(buffer_out, particles, sizeof(particle) * buffer_width);
+	memcpy(buffer_out, particles, sizeof(particle) * CHUNK_SIZE);
 
 	int transmissions;
 	MPI_Request send_status;
 	MPI_Request recv_status;
 	for (transmissions = 0; transmissions < number_of_transmissions; ++transmissions) {
-		if (mpi_rank == 0) {
-			printf("transmission %d\n", transmissions);
-			fflush(stdout);
-		}
 		if (number_of_transmissions - 2 > transmissions) {
 			MPI_Isend(buffer_out, mpi_cnt(CHUNK_SIZE), mpi_datatype, right, MPI_NEW_DATA_TAG, mpi_commring, &send_status);
 			MPI_Irecv(buffer_in, mpi_cnt(CHUNK_SIZE), mpi_datatype, left, MPI_NEW_DATA_TAG, mpi_commring, &recv_status);
@@ -116,17 +111,17 @@ void compute(particle* particles) {
 		//gehe alle local partikel durch und berechne die auf sie wirkenden Kräfte
 		int i = 0;
 		int j = 0;
-
-#pragma acc data copy (particles[0: strip_width ], buffer_out [0:CHUNK_SIZE])
+		particle* actual_particle;
+#pragma acc data copy (particles[0: strip_width ], buffer_out [0:CHUNK_SIZE], actual_particle[0:1])
 		for (i = 0; i < strip_width; i++) {
-			particle* actual_particle = &particles[i];
+			actual_particle = &particles[i];
 			//berechne die kraft die auf partikel i wirkt
 #pragma acc parallel loop
 			for (j = 0; j < CHUNK_SIZE; j++) {
 //				actual_particle->f.x += buffer_out[j].f.x + buffer_out[j].f.y + buffer_out[j].f.z;
 //				actual_particle->f.y += buffer_out[j].f.x + buffer_out[j].f.y + buffer_out[j].f.z;
 //				actual_particle->f.z += buffer_out[j].f.x + buffer_out[j].f.y + buffer_out[j].f.z;
-				actual_particle->f.z = i + j;
+				actual_particle->f.z = 17;
 			}
 		}
 
@@ -139,9 +134,9 @@ void compute(particle* particles) {
 			//if we have to send some more locals and the current sending loop is complete
 			if (more_locals == true && (transmissions + 1) % mpi_size == 0) {
 				int offset = (transmissions + 1) / mpi_size * CHUNK_SIZE;
-				memcpy(buffer_out, &particles[offset], sizeof(particle) * buffer_width);
+				memcpy(buffer_out, &particles[offset], sizeof(particle) * CHUNK_SIZE);
 			} else {
-				memcpy(buffer_out, buffer_in, sizeof(particle) * buffer_width);
+				memcpy(buffer_out, buffer_in, sizeof(particle) * CHUNK_SIZE);
 			}
 		}
 	}
@@ -220,8 +215,6 @@ int main(int argc, char *argv[]) {
 	}
 
 	compute(locals);
-	printf("%d: compute done!\n", mpi_rank);
-	fflush(stdout);
 
 	end = clock();
 	MPI_Gather(locals, mpi_cnt(strip_width), mpi_datatype, particles, mpi_cnt(strip_width), mpi_datatype, 0, mpi_commring);
@@ -242,6 +235,6 @@ int main(int argc, char *argv[]) {
 	 }
 	 */
 
-	return 1337;
+	return 0;
 }
 
