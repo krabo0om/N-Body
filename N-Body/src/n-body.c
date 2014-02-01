@@ -8,9 +8,8 @@
 #include "n-body.h"
 
 //#define SIZE_LOCAL 20000
-#define NUM_PARTICLES 20000
-#define CHUNK_SIZE 5000
-
+//#define NUM_PARTICLES 10000
+//#define CHUNK_SIZE 1000
 #define mpi_cnt(X) sizeof(particle) * X
 
 MPI_Datatype mpi_datatype = MPI_INT;
@@ -70,6 +69,8 @@ void compute(particle particles[]) {
 
 	double time_spent;
 
+	int var_cs = CHUNK_SIZE;
+
 	int mpi_rank, mpi_size;
 	MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
 	MPI_Comm_size(MPI_COMM_WORLD, &mpi_size);
@@ -77,8 +78,8 @@ void compute(particle particles[]) {
 	int left, right;
 	MPI_Cart_shift(mpi_commring, 0, 1, &left, &right);
 
-	int strip_width = NUM_PARTICLES / mpi_size;
-	int number_of_transmissions = NUM_PARTICLES / CHUNK_SIZE;
+	int strip_width = (NUM_PARTICLES) / mpi_size;
+	int number_of_transmissions = (NUM_PARTICLES) / (CHUNK_SIZE);
 	bool more_locals = false;    //there are more locals than chunk_size
 	if (strip_width > CHUNK_SIZE) {
 		more_locals = true;
@@ -97,11 +98,12 @@ void compute(particle particles[]) {
 	 buffer_out = (struct particle *) malloc(CHUNK_SIZE * sizeof(struct particle));
 	 result = (struct particle *) malloc(NUM_PARTICLES * sizeof(struct particle));
 	 */
-	memcpy(buffer_out, particles, sizeof(particle) * CHUNK_SIZE);
+	memcpy(buffer_out, particles, sizeof(particle) * (CHUNK_SIZE));
 
 	int transmissions;
 	MPI_Request send_status;
 	MPI_Request recv_status;
+#pragma acc data copyin (particles[0: strip_width ])
 	for (transmissions = 0; transmissions < number_of_transmissions; ++transmissions) {
 		if (number_of_transmissions - 2 > transmissions) {
 			MPI_Isend(buffer_out, mpi_cnt(CHUNK_SIZE), mpi_datatype, right, MPI_NEW_DATA_TAG, mpi_commring, &send_status);
@@ -111,17 +113,16 @@ void compute(particle particles[]) {
 		//gehe alle local partikel durch und berechne die auf sie wirkenden Kräfte
 		int i = 0;
 		int j = 0;
-		particle* actual_particle;
-#pragma acc data copy (particles[0: strip_width ], buffer_out [0:CHUNK_SIZE], actual_particle[0:1])
+#pragma acc data copy (buffer_out [0:var_cs])
 		for (i = 0; i < strip_width; i++) {
-			actual_particle = &particles[i];
+			particle* actual_particle = &particles[i];
 			//berechne die kraft die auf partikel i wirkt
 #pragma acc parallel loop
-			for (j = 0; j < CHUNK_SIZE; j++) {
-//				actual_particle->f.x += buffer_out[j].f.x + buffer_out[j].f.y + buffer_out[j].f.z;
-//				actual_particle->f.y += buffer_out[j].f.x + buffer_out[j].f.y + buffer_out[j].f.z;
-//				actual_particle->f.z += buffer_out[j].f.x + buffer_out[j].f.y + buffer_out[j].f.z;
-				actual_particle->f.z = 17;
+			for (j = 0; j < var_cs; j++) {
+				particles[i].f.x += buffer_out[j].f.x + buffer_out[j].f.y + buffer_out[j].f.z;
+				particles[i].f.y += buffer_out[j].f.x + buffer_out[j].f.y + buffer_out[j].f.z;
+				particles[i].f.z += buffer_out[j].f.x + buffer_out[j].f.y + buffer_out[j].f.z;
+//				actual_particle.f.z = 17;
 			}
 		}
 
@@ -172,9 +173,6 @@ int main(int argc, char *argv[]) {
 	MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
 	MPI_Comm_size(MPI_COMM_WORLD, &mpi_size);
 
-	printf("test\n");
-	fflush(stdout);
-
 	if (mpi_size < 2) {
 		printf("Too few mpi processes (%d)", mpi_size);
 		MPI_Finalize();
@@ -221,7 +219,7 @@ int main(int argc, char *argv[]) {
 
 	if (mpi_rank == 0) {
 		double time_spent = (double) (end - begin) / CLOCKS_PER_SEC;
-		printf("particles: %d Zeit: %f \n", NUM_PARTICLES, time_spent);
+		printf("particles: %d, chunksize: %d, Zeit: %f \n", NUM_PARTICLES, CHUNK_SIZE, time_spent);
 		free(particles);
 	}
 
