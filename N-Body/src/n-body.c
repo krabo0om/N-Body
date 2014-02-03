@@ -7,15 +7,20 @@
 
 #include "n-body.h"
 
-//#define SIZE_LOCAL 20000
-//#define NUM_PARTICLES 10000
-//#define CHUNK_SIZE 1000
+#define NUM_PARTICLES	15
+#define CHUNK_SIZE	2
 #define mpi_cnt(X) sizeof(particle) * X
+//uncomment to calculate particle[x] and particle[y] with x=y
+//otherwise particle[y] will temporarily replaced with EPSILON_P
+//#define X_Y_CALC
 
 MPI_Datatype mpi_datatype = MPI_INT;
 MPI_Comm mpi_commring;
 
 static const unsigned int MPI_NEW_DATA_TAG = 111;
+
+//static const particle EPSILON_P = {0, 0, 0, 0, {0, 0, 0, 0}};		//short version
+static const particle EPSILON_P = { .x = 0, .y = 0, .z = 0, .value = 0, .f = { .value = 0, .x = 0, .y = 0, .z = 0 } };
 
 force calculate_force(force f1, force f2) {
 	f1.x = 2.01 * f2.x + f2.y + f2.z;
@@ -69,7 +74,9 @@ void compute(particle particles[]) {
 
 	double time_spent;
 
-	int var_cs = CHUNK_SIZE;
+	int var_cs = CHUNK_SIZE;		//workaround for calculations in the define statement
+	int current_buffer_wi = CHUNK_SIZE;
+	int last_buffer_wi = current_buffer_wi;
 
 	int mpi_rank, mpi_size;
 	MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
@@ -78,72 +85,104 @@ void compute(particle particles[]) {
 	int left, right;
 	MPI_Cart_shift(mpi_commring, 0, 1, &left, &right);
 
+	particle* backup_locals;		//the locals are overwritten in the progress, if not all can be sent all together, we need a backup
+
 	int strip_width = (NUM_PARTICLES) / mpi_size;
-	int number_of_transmissions = (NUM_PARTICLES) / (CHUNK_SIZE);
-	bool more_locals = false;    //there are more locals than chunk_size
-	if (strip_width > CHUNK_SIZE) {
-		more_locals = true;
-//		buffer_width = strip_width;
+	bool odd_locals = false;	//true = last chunk of locals is smaller than chunk size, implicates more locals than chunk size
+	if (strip_width > var_cs) {
+		odd_locals = true;
+		last_buffer_wi = strip_width % var_cs;
+		if (last_buffer_wi == 0) {				//strip_width * k = chunk_size, but we assumed strip_width * k + last_buf_wi = chunk_size
+			last_buffer_wi = current_buffer_wi;
+		}
+		long size = sizeof(particle) * (strip_width - var_cs);
+		backup_locals = malloc(size);
+		memcpy(backup_locals, &particles[var_cs], size);    //backup to locals which will be sent later
 	}
 
+	if (strip_width < var_cs) {				//don't have enough locals to fill up the buffers
+		current_buffer_wi = strip_width;	//decrease buffer size
+	}
+
+	int number_of_transmissions = strip_width / current_buffer_wi;    //for locals on one node
+	if (strip_width % current_buffer_wi != 0) {    //if s_w > c_b_w then / truncates the remainder, so need to add a transmission
+		number_of_transmissions++;
+	}
+	number_of_transmissions *= mpi_size;		//for all nodes
+
 	//particle locals[strip_width];			//locals sind die partikel zu denen ein Prozess die Kräfte die auf sie wirken berechnen soll
-	particle buffer_in[CHUNK_SIZE];			//buffer_in sind die Partikel die per MPI ankommen
-	particle buffer_out[CHUNK_SIZE];    //buffer_out sind die Partikel die per MPI gesendet werden, mit buffer_out werden die Teilkräfte für locals berechnet
+	particle buffer_in[current_buffer_wi];			//buffer_in sind die Partikel die per MPI ankommen
+	particle buffer_out[current_buffer_wi];    //buffer_out sind die Partikel die per MPI gesendet werden, mit buffer_out werden die Teilkräfte für locals berechnet
 	//particle result[NUM_PARTICLES];		//In dieses Array werden die particle mit den fertigen kräften gespeichert
 
-	//Speicher reservieren für die struct arrays, nur notwendig wenn wir dynamische struct arrays brauchen
-	/*
-	 locals = (struct particle *) malloc(SIZE_LOCAL * sizeof(struct particle));
-	 buffer_in = (struct particle *) malloc(CHUNK_SIZE * sizeof(struct particle));
-	 buffer_out = (struct particle *) malloc(CHUNK_SIZE * sizeof(struct particle));
-	 result = (struct particle *) malloc(NUM_PARTICLES * sizeof(struct particle));
-	 */
-	memcpy(buffer_out, particles, sizeof(particle) * (CHUNK_SIZE));
+	memcpy(buffer_out, particles, sizeof(particle) * (current_buffer_wi));
 
 	int transmissions;
 	MPI_Request send_status;
 	MPI_Request recv_status;
-#pragma acc data copyin (particles[0: strip_width ])
+	//TODO fix: copy anstatt copyin, dafür copyin beim buffer_out
+#pragma acc data copy (particles[0: strip_width ])
 	for (transmissions = 0; transmissions < number_of_transmissions; ++transmissions) {
 		if (number_of_transmissions - 2 > transmissions) {
-			MPI_Isend(buffer_out, mpi_cnt(CHUNK_SIZE), mpi_datatype, right, MPI_NEW_DATA_TAG, mpi_commring, &send_status);
-			MPI_Irecv(buffer_in, mpi_cnt(CHUNK_SIZE), mpi_datatype, left, MPI_NEW_DATA_TAG, mpi_commring, &recv_status);
+			int temp = current_buffer_wi;
+			if (odd_locals == true && number_of_transmissions - mpi_size - 1 == transmissions) {    //last round of transmissions, properly smaller chunks
+				temp = last_buffer_wi;
+			}
+			MPI_Isend(buffer_out, mpi_cnt(temp), mpi_datatype, right, MPI_NEW_DATA_TAG, mpi_commring, &send_status);
+			MPI_Irecv(buffer_in, mpi_cnt(temp), mpi_datatype, left, MPI_NEW_DATA_TAG, mpi_commring, &recv_status);
 		}
 
+		int offset_locals = transmissions / mpi_size;
+		int x_offset = (offset_locals > 0) ? 1 : 0;		//offset factor, your locals are last in one transmission cycle
+		//pos of incoming particles
+		int x = ((mpi_rank + transmissions + x_offset) * strip_width) % NUM_PARTICLES + (var_cs * offset_locals);    // + j
+		//your locals
+		int y = mpi_rank * var_cs;		// + i
 		//gehe alle local partikel durch und berechne die auf sie wirkenden Kräfte
-		int i = 0;
-		int j = 0;
-#pragma acc data copy (buffer_out [0:var_cs])
-		for (i = 0; i < strip_width; i++) {
-			particle* actual_particle = &particles[i];
+#pragma acc data copyin (buffer_out [0:current_buffer_wi], x, y)
+		for (int i = 0; i < strip_width; i++) {
+#ifndef X_Y_CALC
+			if (x >= y + i && x + current_buffer_wi <= y + i) {
+				buffer_out[x % current_buffer_wi] = EPSILON_P;
+			}
+#endif
+
 			//berechne die kraft die auf partikel i wirkt
 #pragma acc parallel loop
-			for (j = 0; j < var_cs; j++) {
+			for (int j = 0; j < current_buffer_wi; j++) {
+/*#ifdef CHECKER
+				//calc if x>y and x+y odd or x<y and x+y even
+				int x_temp = x + j;
+				int y_temp = y + i;
+				if (x_temp == y_temp || (x_temp > y_temp && (x_temp + y_temp) % 2 == 0) || (x_temp < y_temp && (x_temp + y_temp) % 2 == 1)) {
+					continue;
+				}
+#endif*/
 				particles[i].f.x += buffer_out[j].f.x + buffer_out[j].f.y + buffer_out[j].f.z;
 				particles[i].f.y += buffer_out[j].f.x + buffer_out[j].f.y + buffer_out[j].f.z;
 				particles[i].f.z += buffer_out[j].f.x + buffer_out[j].f.y + buffer_out[j].f.z;
-//				actual_particle.f.z = 17;
 			}
-		}
 
+		}
 		if (number_of_transmissions - 2 > transmissions) {
+			if (odd_locals == true && number_of_transmissions - mpi_size - 1 == transmissions) {
+				current_buffer_wi = last_buffer_wi;
+			}
+
 			//wait for comm to finish
 			MPI_Status temp;
 			MPI_Wait(&send_status, &temp);
 			MPI_Wait(&recv_status, &temp);
-			//free buffer_in, store data for next computation phase
-			//if we have to send some more locals and the current sending loop is complete
-			if (more_locals == true && (transmissions + 1) % mpi_size == 0) {
-				int offset = (transmissions + 1) / mpi_size * CHUNK_SIZE;
-				memcpy(buffer_out, &particles[offset], sizeof(particle) * CHUNK_SIZE);
+			//butter_out = buffer_in
+			if (odd_locals == true && (transmissions + 1) % mpi_size == 0) {
+				//if we have to send some more locals and the current sending loop is complete
+				int offset = transmissions / mpi_size * CHUNK_SIZE;    //no trans+1 because the first offset is 0, otherwise ((trans+1)/m_s)-1
+				memcpy(buffer_out, &backup_locals[offset], sizeof(particle) * current_buffer_wi);
 			} else {
-				memcpy(buffer_out, buffer_in, sizeof(particle) * CHUNK_SIZE);
+				memcpy(buffer_out, buffer_in, sizeof(particle) * current_buffer_wi);
 			}
 		}
 	}
-
-//zurückschreiben in ergebnisarray
-
 }
 
 /**
@@ -153,15 +192,9 @@ void compute(particle particles[]) {
 void create_particles(particle* particles, int size_of_array) {
 	int i = 0;
 
-	/*
-	 * Array wird nach folgendem Schema initialisiert:
-	 * 1. Element: val=1
-	 * 2. Element: val=2
-	 * 3. Element: val=3
-	 */
 	for (i = 0; i < size_of_array; i++) {
 		particle temp;
-		temp.value = i + 1;
+		temp.value = 1 + i;
 		particles[i] = temp;
 	}
 
@@ -172,38 +205,26 @@ int main(int argc, char *argv[]) {
 	int mpi_rank, mpi_size;
 	MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
 	MPI_Comm_size(MPI_COMM_WORLD, &mpi_size);
-
-	if (mpi_size < 2) {
-		printf("Too few mpi processes (%d)", mpi_size);
-		MPI_Finalize();
-		return -1;
-	}
-
+	/*
+	 if (mpi_size < 2) {
+	 printf("Too few mpi processes (%d)", mpi_size);
+	 MPI_Finalize();
+	 return -1;
+	 }
+	 */
 	int periodic = 1;
 	MPI_Cart_create( MPI_COMM_WORLD, 1, &mpi_size, &periodic, 1, &mpi_commring);
 
 	setMpiDatatype();
 
-//	mpi_size = 4;
 	int strip_width = NUM_PARTICLES / mpi_size;
 	particle locals[strip_width];
 	particle* particles;
 	if (mpi_rank == 0) {
-		//array alle vorhandenen Partikel
+		//array aller vorhandener Partikel
 		particles = malloc(sizeof(particle) * NUM_PARTICLES);
 		create_particles(particles, NUM_PARTICLES);
-//		locals[0].f.value=1337;
-//		MPI_Send(locals, strip_width * sizeof(particle), mpi_datatype, 1, 0, mpi_commring);
-//		printf("gesendet\n");
 	}
-//	if (mpi_rank == 1){
-//		MPI_Status temp;
-//		MPI_Recv(locals, strip_width * sizeof(particle), mpi_datatype, 0, 0, mpi_commring, &temp);
-//		printf("empfangen\n");
-//		printf("%d: particle.value = %f\n", mpi_rank, locals[0].f.value);
-//	}
-//
-//
 	MPI_Scatter(particles, mpi_cnt(strip_width), mpi_datatype, locals, mpi_cnt(strip_width), mpi_datatype, 0, mpi_commring);
 
 	//übergebe alle particle an compute function die nbody berechnet und erhalte result particle mit forces
@@ -223,16 +244,7 @@ int main(int argc, char *argv[]) {
 		free(particles);
 	}
 
-//	MPI_Type_free(&mpi_datatype);
 	MPI_Finalize();
-
-	/*
-	 for(i =0; i<NUM_PARTICLES;i++)
-	 {
-	 printf(" %d ", particles[i].value);
-	 }
-	 */
-
 	return 0;
 }
 
